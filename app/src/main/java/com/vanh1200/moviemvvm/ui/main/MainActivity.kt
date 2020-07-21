@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     private val mainViewModel: MainViewModel by viewModel()
     private lateinit var movieAdapter: MovieAdapter
     private var tempMovies = mutableListOf<Movie>()
+    private var isUseRx = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +73,11 @@ class MainActivity : AppCompatActivity() {
     private fun getMovies() {
         if (BaseUtils.isNetworkConnected(this)) {
             Toast.makeText(this, "getMovies from internet", Toast.LENGTH_SHORT).show()
-            mainViewModel.getMoviesFromRemote()
+            if (isUseRx) {
+                mainViewModel.getMoviesFromRemoteRx()
+            } else {
+                mainViewModel.getMoviesFromRemote()
+            }
         } else {
             Toast.makeText(this, "getMovies from local", Toast.LENGTH_SHORT).show()
             mainViewModel.getMoviesFromLocal()

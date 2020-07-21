@@ -4,6 +4,7 @@ import com.vanh1200.moviemvvm.data.local.dao.MovieDao
 import com.vanh1200.moviemvvm.data.model.Movie
 import com.vanh1200.moviemvvm.data.remote.api.MovieApi
 import com.vanh1200.moviemvvm.data.remote.response.GetMovieListResponse
+import io.reactivex.Single
 
 class MovieRepositoryImpl(private val movieApi: MovieApi, private val movieDao: MovieDao) :
     MovieRepository {
@@ -17,5 +18,9 @@ class MovieRepositoryImpl(private val movieApi: MovieApi, private val movieDao: 
 
     override suspend fun insertMoviesToLocal(movies: List<Movie>) {
         return movieDao.insert(movies)
+    }
+
+    override fun getMovieFromRemoteRx(): Single<GetMovieListResponse> {
+        return movieApi.getMoviesRx()
     }
 }
