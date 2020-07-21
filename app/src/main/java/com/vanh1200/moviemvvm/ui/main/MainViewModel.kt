@@ -33,7 +33,7 @@ class MainViewModel(private val movieRepository: MovieRepository) : ViewModel() 
 
     fun insertMoviesToLocal(movies: List<Movie>) {
         viewModelScope.launch {
-            movieRepository.getMovieFromLocal()
+            movieRepository.insertMoviesToLocal(movies)
         }
     }
 
