@@ -11,15 +11,22 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 
 class MainViewModel(private val movieRepository: MovieRepository) : ViewModel() {
-    val liveMovies = MutableLiveData<List<Movie>>()
+
+    val mainViewState = MutableLiveData<MainViewState>()
     private var compositeDisposable: CompositeDisposable = CompositeDisposable()
 
     fun getMoviesFromRemote() {
         viewModelScope.launch() {
             try {
-                liveMovies.value = movieRepository.getMovieFromRemote().results
+                mainViewState.value = MainViewState.ShowLoading
+                mainViewState.value = movieRepository.getMovieFromRemote().results?.let {
+                    MainViewState.GetMoviesSuccess(it)
+                }
             } catch (e: Exception) {
+                mainViewState.value = MainViewState.GetMovieError(e.toString())
                 e.printStackTrace()
+            } finally {
+                mainViewState.value = MainViewState.HideLoading
             }
         }
     }
@@ -29,9 +36,15 @@ class MainViewModel(private val movieRepository: MovieRepository) : ViewModel() 
             .getMovieFromRemoteRx()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe { mainViewState.value = MainViewState.ShowLoading }
+            .doAfterTerminate { mainViewState.value = MainViewState.HideLoading }
             .subscribe(
-                { response -> liveMovies.value = response.results },
-                { e -> e.printStackTrace() })
+                { response ->
+                    mainViewState.value = response.results?.let {
+                        MainViewState.GetMoviesSuccess(it)
+                    }
+                },
+                { e -> mainViewState.value = MainViewState.GetMovieError(e.toString()) })
 
         compositeDisposable.add(disposable)
     }
@@ -39,7 +52,7 @@ class MainViewModel(private val movieRepository: MovieRepository) : ViewModel() 
     fun getMoviesFromLocal() {
         viewModelScope.launch {
             val movies = movieRepository.getMovieFromLocal()
-            movies?.let { liveMovies.value = it }
+            movies?.let { mainViewState.value = MainViewState.GetMoviesSuccess(it) }
         }
     }
 

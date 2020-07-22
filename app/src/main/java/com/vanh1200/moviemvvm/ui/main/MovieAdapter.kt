@@ -40,7 +40,7 @@ class MovieAdapter : RecyclerView.Adapter<MovieAdapter.ViewHolder>() {
 
         fun bindData(movie: Movie) {
             binding.textTitle.text = movie.title
-            binding.imagePoster.setImage(movie.getFullBackdropPath()!!)
+            movie.getFullBackdropPath()?.let { binding.imagePoster.setImage(it) }
             binding.textOverview.text = movie.overview
             binding.textReleaseDate.text = movie.release_date
             binding.ratingBar.rating = movie.vote_average?.toFloat()!!

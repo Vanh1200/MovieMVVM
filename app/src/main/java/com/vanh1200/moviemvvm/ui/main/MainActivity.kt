@@ -1,7 +1,6 @@
 package com.vanh1200.moviemvvm.ui.main
 
 import android.os.Bundle
-import android.text.Html
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -18,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     private val mainViewModel: MainViewModel by viewModel()
     private lateinit var movieAdapter: MovieAdapter
     private var tempMovies = mutableListOf<Movie>()
-    private var isUseRx = false
+    private var isUseRx = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,13 +36,29 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeData() {
         mainViewModel.apply {
-            liveMovies.observe(this@MainActivity, Observer {
-                binding.swipeRefresh.isRefreshing = false
-                if (it.isNotEmpty()) {
-                    tempMovies.clear()
-                    tempMovies.addAll(it)
+            mainViewState.observe(this@MainActivity, Observer {
+                when (it) {
+                    is MainViewState.GetMoviesSuccess -> {
+                        if (it.movies.isNotEmpty()) {
+                            tempMovies.clear()
+                            tempMovies.addAll(it.movies)
+                        }
+                        movieAdapter.setData(it.movies)
+                    }
+
+                    is MainViewState.GetMovieError -> {
+                        Toast.makeText(this@MainActivity, it.errorMess,
+                            Toast.LENGTH_SHORT).show()
+                    }
+
+                    is MainViewState.ShowLoading -> {
+                        binding.swipeRefresh.isRefreshing = true
+                    }
+
+                    is MainViewState.HideLoading -> {
+                        binding.swipeRefresh.isRefreshing = false
+                    }
                 }
-                movieAdapter.setData(it)
             })
         }
     }
