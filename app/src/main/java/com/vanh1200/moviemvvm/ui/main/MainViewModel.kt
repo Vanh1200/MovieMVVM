@@ -36,15 +36,20 @@ class MainViewModel(private val movieRepository: MovieRepository) : ViewModel() 
             .getMovieFromRemoteRx()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .filter { it.results != null && it.results!!.size > 0 }
+            .map {
+                for (item in it.results!!) {
+                    item.title = item.title?.toUpperCase()
+                }
+                it
+            }
             .doOnSubscribe { mainViewState.value = MainViewState.ShowLoading }
             .doAfterTerminate { mainViewState.value = MainViewState.HideLoading }
             .subscribe(
-                { response ->
-                    mainViewState.value = response.results?.let {
-                        MainViewState.GetMoviesSuccess(it)
-                    }
+                {
+                    mainViewState.value = it.results?.let { MainViewState.GetMoviesSuccess(it) }
                 },
-                { e -> mainViewState.value = MainViewState.GetMovieError(e.toString()) })
+                { mainViewState.value = MainViewState.GetMovieError(it.toString()) })
 
         compositeDisposable.add(disposable)
     }

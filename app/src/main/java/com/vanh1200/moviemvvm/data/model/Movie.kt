@@ -25,7 +25,7 @@ data class Movie(
     val runtime: Int? = null,
     val status: String? = null,
     val tagline: String? = null,
-    val title: String? = null,
+    var title: String? = null,
     val video: Boolean? = false,
     val vote_average: Double? = null,
     val vote_count: Int? = null,
